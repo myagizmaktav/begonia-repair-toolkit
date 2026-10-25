@@ -1,23 +1,23 @@
 # begonia-repair-toolkit
 
-Redmi Note 8 Pro **begonia** üzerindeki Avrupa ROM ve NV onarım sürecini belgelendiren, özel bir onarım paketini bilgisayarda hazırlayan araç. Kapsam **MIUI EEA V12.5.15.0.RGGEUXM / Android 11** ve **4.14.186** çekirdek ailesidir. Redmi 7 veya başka bir cihaz için değildir.
+A tool for preparing a private repair package on your computer, with documentation of an EEA ROM and NV repair on the Redmi Note 8 Pro **begonia**. Its scope is **MIUI EEA V12.5.15.0.RGGEUXM / Android 11** and the **4.14.186** kernel family. It does not target the Redmi 7 or other devices.
 
-Araç yalnız bu telefona ait özgün IMEI değerlerini geri yükleme hazırlığı içindir. IMEI üretmez, başka cihazdan kimlik kopyalamaz ve Türkiye kayıt işlemi yapmaz. Telefonun kayıt durumu yazılım hazırlama ile değişmez. Hiçbir komut ADB, fastboot veya USB üzerinden telefona erişmez.
+This tool prepares restoration of the target phone's own original IMEIs. It does not generate IMEIs, copy another device's identity, or register a phone in Türkiye. Preparing a repair package does not change the phone's registration status. The Python tool never accesses a phone through ADB, fastboot, or USB.
 
-## Bu vakada ne bulundu?
+## Findings from this repair
 
-- Avrupa ROM kuruldu. İncelenen NVRAM bölümü tamamen sıfırdı; başlangıç yedeği bu durumu koruyordu, sağlam fabrika kalibrasyon yedeği değildi.
-- Dört dosyada yanlış SELinux etiketi bulundu: `nvdata/fstab.mt6785`, `nvdata/md/NVRAM/NVD_CORE/MTCR_000`, `nvdata/media/Audio_ver1_Vol_custom`, `protect_s/md/NA77_006`.
-- İçerik hashleri değişmeden stok etiketleri uygulandı. Sonraki recovery kaydındaki `--show_bad_nv`, NV doğrulamasının açılışı durdurduğunu gösterdi. Etiket düzeltmesi tek başına özgün NV içeriğini geri getirmez.
-- Doğrulanmış bölüm yedekleri, pinli kaynaklar ve ayrıca kontrol edilen yazma adımları kullanılarak Android yeniden açıldı. Kullanıcı **arama ve mobil verinin çalıştığını doğruladı**. YouTube/hoparlör sesi sorununun teşhisi henüz tamamlanmadı; cihazın bütün işlevlerinin sağlıklı olduğu iddia edilmiyor.
+- The EEA ROM was installed. The inspected NVRAM partition contained only zeros; the initial backup preserved that state and was not a valid factory calibration backup.
+- Four files had incorrect SELinux labels: `nvdata/fstab.mt6785`, `nvdata/md/NVRAM/NVD_CORE/MTCR_000`, `nvdata/media/Audio_ver1_Vol_custom`, and `protect_s/md/NA77_006`.
+- Stock labels were applied without changing file content hashes. The subsequent recovery log contained `--show_bad_nv`, confirming that NV validation was preventing normal boot. Correcting labels alone does not restore original NV contents.
+- Android booted after repair using verified partition backups, pinned sources, and separately checked writes. The user **confirmed that calls and mobile data worked**. Diagnosis of the YouTube/speaker audio issue remains incomplete; this is not a claim that every device function has been restored.
 
-Bu bulgular tek cihazlık vaka kaydıdır. Aynı belirti her cihazda aynı nedenle oluşmaz. Depoda bu cihaza ait kimlik, günlük, yedek veya firmware bulunmaz.
+These findings describe one device. Similar symptoms can have different causes on other phones. This repository contains no personal device identifiers, logs, backups, or firmware.
 
-## Üç komut
+## Three commands
 
-Python 3.9+ yeterlidir. `build` ayrıca güvendiğiniz bir PHP CLI, OpenSSL, ZipArchive ve little-endian PHP ortamı gerektirir. `prepare` kaynakları indirir; `build` pinli upstream PHP kodunu bilgisayarda çalıştırır. PHP kurulumu bu aracın kapsamında değildir.
+Python 3.9+ is required. `build` additionally requires a trusted PHP CLI with OpenSSL, ZipArchive, and a little-endian runtime. `prepare` downloads sources; `build` runs the pinned upstream PHP code on your computer. Installing PHP is outside this tool's scope.
 
-Özel yapılandırmayı temp altında oluşturun:
+Create a private configuration in a temporary directory:
 
 ```sh
 TASK_WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/begonia-private.XXXXXX")"
@@ -26,21 +26,21 @@ cp .env.example "$PRIVATE_ENV"
 chmod 600 "$PRIVATE_ENV"
 ```
 
-`PRIVATE_ENV` dosyasını yerel editörünüzde doldurun. IMEI'leri terminal komutuna, ekran görüntüsüne, issue'ya veya README'ye yazmayın. Yalnız bu cihazın kendi özgün IMEI'lerini ve doğrulanmış kendi chip/MAC bilgilerini kullanın. Bilinmeyen bir alanı başka telefondan veya internetten alınan değerle doldurmayın. Araç eksik kimlik ya da MAC üretmez. MAC kontrolü yalnız sıfır olmayan unicast biçimini doğrular; adresin fabrikadaki değer veya cihaza ait olduğunu kanıtlamaz.
+Fill in `PRIVATE_ENV` using a local editor. Do not put IMEIs in terminal commands, screenshots, issues, or the README. Use only this phone's own original IMEIs and verified chip/MAC information for the device. Do not fill unknown fields with values copied from another phone or the internet. The tool does not generate missing identifiers or MAC addresses. MAC validation checks only for a nonzero unicast address; it does not prove that an address is the factory value or belongs to the device.
 
 ```sh
-# Varsayılan da validate'dir: indirme veya PHP çalıştırma yok.
+# validate is also the default: no downloads or PHP execution.
 python3 repair_builder.py validate --env-file "$PRIVATE_ENV"
 
-# Yalnız pinli kaynakları temp'e indirir ve hashlerini doğrular; çalıştırmaz.
+# Download pinned sources into temp and verify their hashes; do not execute them.
 python3 repair_builder.py prepare --runtime-dir "$TASK_WORKDIR/runtime"
 
-# Verilen PHP ile pinli upstream kodunu çalıştırır; telefona erişmez.
+# Run the pinned upstream code with the supplied PHP executable; do not access the phone.
 python3 repair_builder.py build --env-file "$PRIVATE_ENV" \
   --runtime-dir "$TASK_WORKDIR/runtime" --php /absolute/path/to/php
 ```
 
-FrankenPHP için aynı build çağrısı:
+For FrankenPHP, use:
 
 ```sh
 python3 repair_builder.py build --env-file "$PRIVATE_ENV" \
@@ -48,27 +48,27 @@ python3 repair_builder.py build --env-file "$PRIVATE_ENV" \
   --php /absolute/path/to/frankenphp --php-mode frankenphp
 ```
 
-Yardımcı `php-cli` alt komutunu kendisi ekler. `--php` değerine güvendiğiniz çalıştırılabilir dosyanın mutlak yolunu verin.
+The tool adds the `php-cli` subcommand automatically. Set `--php` to the absolute path of an executable you trust.
 
-Yapılandırma `KEY=VALUE` metnidir; shell gibi yorumlanmaz. `export`, değişken genişletmesi, komut çalıştırma, kaçış dizileri ve satır sonu yorumları desteklenmez. Dosya size ait olmalı ve POSIX izinleri `600` olmalıdır. Hata mesajları alan değerlerini, upstream stdout/stderr'ini veya özel dosya yolunu yazdırmaz.
+Configuration uses plain `KEY=VALUE` text and is never evaluated as shell code. `export`, variable expansion, command execution, escape sequences, and inline comments are unsupported. The file must belong to you and have POSIX permissions of `600`. Error messages do not print field values, upstream stdout/stderr, or private file paths.
 
-## Çıktı ve sınırlar
+## Output and limitations
 
-Çıktı `$TASK_WORKDIR/runtime/private-output-*/begonia-repair-review.zip` altındadır. **Bu dosya cihaz kimliklerini içerir; özel kalmalıdır ve doğrudan recovery ile flash edilemez.** Yalnız `nvram.img`, `nvdata.img`, vendor modülü, init dosyası ve özel hash manifesti içerir. Upstream installer giriş noktaları ve diğer executable yardımcıları dışarıda bırakılır. Geçici özgün flashable ZIP ve `config.txt` build sonunda kaldırılır.
+Output is written to `$TASK_WORKDIR/runtime/private-output-*/begonia-repair-review.zip`. **This file contains device identifiers, must remain private, and cannot be flashed directly in recovery.** It contains only `nvram.img`, `nvdata.img`, the vendor module, its init file, and a private hash manifest. Upstream installer entry points and other executable helpers are excluded. The temporary original flashable ZIP and `config.txt` are removed after the build.
 
-Kontroller; IMEI biçimi/Luhn, chip ve MAC biçimi, sabit kaynak boyutları/SHA-256, ZIP CRC, NVRAM TOC sınırları ve genel checksum, CSSD checksum/TLV içindeki iki IMEI+chip+MAC eşleşmesi, Wi-Fi/BT kayıtları ve checksum'ları ile modül/init/NVDATA kaynak eşleşmesini kapsar. Bunlar sahiplik, operatör kaydı, fabrikadaki kalibrasyon veya RF kalitesi kanıtı değildir. Şablon özgün kalibrasyonları geri getirmez.
+Validation covers IMEI format/Luhn checks, chip and MAC formats, pinned source sizes/SHA-256 hashes, ZIP CRCs, NVRAM TOC bounds and its overall checksum, CSSD checksum and TLV matches for both IMEIs/chip/MACs, Wi-Fi/BT records and their checksums, and module/init/NVDATA matches against the pinned sources. These checks do not establish ownership, carrier registration, factory calibration, or RF quality. The template does not recover original calibrations.
 
-Pinli modülün vermagic'i `4.14.186-g215472d`; vakadaki stok kernel `4.14.186-g4e5507d5edae` idi. Sürüm ön ekinin aynı olması ABI uyumluluğu garantisi değildir. Upstream init, normal yüklemeyi ve ardından zorlamalı yüklemeyi dener; normal yükleme başarılıysa ikinci denemenin “already exists” sonucu tek başına hata sayılmaz. Yükleme ve modem sonucu ayrıca doğrulanmalıdır.
+The pinned module's vermagic is `4.14.186-g215472d`; the stock kernel in this case was `4.14.186-g4e5507d5edae`. Matching version prefixes do not guarantee ABI compatibility. The upstream init file attempts a normal module load followed by a forced load. If the first succeeds, an “already exists” result from the second is not itself a failure. Module loading and modem behavior require separate verification.
 
-## Telefonda uygulama
+## Applying the repair to a phone
 
-Otomatik kurulum yoktur. İnceleme paketi hazırlanmış olsa bile yazma işlemleri ayrı bir karardır. **Bootloader açık kalmalıdır; relock yapılmaz.** Gerçek bölüm adları, mount noktaları, yedek geri dönüşü ve vendor doğrulaması kontrol edilmeden payload yazılmamalıdır. Vakada kullanılan somut kontrollü sıra [recovery uygulama notlarında](docs/recovery-checklist.md) bulunur. Bu notlar kimlik veya cihaz seri numarası içermez.
+Installation is manual. Preparing a review package does not write anything to the device. **Keep the bootloader unlocked; do not relock it.** Verify actual partition names, mount points, backup restoration options, and vendor writes before writing payloads. The sequence used in this case is documented in the [recovery procedure](docs/recovery-checklist.md). Those notes contain no personal identifiers or device serial numbers.
 
-Upstream installer'ı doğrudan dağıtmama nedeni: `/nvdata` sabit mount noktası gerçek `/mnt/vendor/nvdata` ile uyuşmayabilir; vendor yazma sonuçları assert edilmez; recovery shell'inde `standalone` algılanırsa Magisk bulunmayan akış yazmadan başarı dönebilir. `run_program(...) && ...` edify'de shell'deki başarı testi değildir. İnceleme paketi bu installer'ı içermez.
+The upstream installer is excluded because its fixed `/nvdata` mount point may differ from the actual `/mnt/vendor/nvdata` mount, vendor write results are not asserted, and detecting `standalone` in the recovery shell can cause the non-Magisk path to return success without writing anything. In edify, `run_program(...) && ...` does not test success the way a shell does. The review package does not include this installer.
 
-## Gizlilik ve test
+## Privacy and testing
 
-`.gitignore` özel env, config, yedek, firmware, binary ve logları dışlar. Bu tek başına güvenlik sınırı değildir: yanlışlıkla izlemeye alınmış dosyayı temizlemez. Yayın öncesi staged dosyalar ayrıca kontrol edilmelidir. Hashler ve üretilen paketler de cihazla ilişkilendirilebilir; bunları issue veya release'e eklemeyin. Temp dosyalarının sonradan silinmesi güvenli disk silme garantisi değildir. Kullanılacak geri dönüş yedeklerini işlem ve donanım testleri tamamlanmadan silmeyin.
+`.gitignore` excludes private env files, configurations, backups, firmware, binaries, and logs. It is not a security boundary and does not remove files already tracked by Git. Inspect staged files before publishing. Hashes and generated packages can also be associated with a device; do not attach them to issues or releases. Deleting temporary files is not a guarantee of secure disk erasure. Keep restoration backups until the procedure and hardware tests are complete.
 
 ```sh
 python3 -m unittest discover -s tests -v
@@ -76,6 +76,6 @@ git diff --cached --stat
 git diff --cached --check
 ```
 
-Testler sentetik değerler kullanır, telefona erişmez ve ağ/PHP gerektirmez. Tam build doğrulaması için gerekli PHP ve pinli önbellek ayrıca sağlanır. Kaynak ve lisans bilgileri [THIRD_PARTY.md](THIRD_PARTY.md) ve [LICENSE](LICENSE) içindedir.
+Tests use synthetic values, do not access a phone, and require neither network access nor PHP. Full build verification requires a suitable PHP runtime and the pinned source cache. Source attribution and licensing details are in [THIRD_PARTY.md](THIRD_PARTY.md) and [LICENSE](LICENSE).
 
-Doğrulanan ROM/recovery indirme kaynakları ve çalışma ortamı [kaynaklar sayfasında](docs/sources.md) bulunur.
+Verified ROM/recovery download sources and runtime details are listed on the [sources page](docs/sources.md).
