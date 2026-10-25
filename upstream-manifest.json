@@ -1,0 +1,66 @@
+{
+  "repository": "https://github.com/timjosten/mtk_imei",
+  "commit": "100e67c2696f6247fef398cf5b46b9cb260e0f93",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1647,
+      "sha256": "bb902a3cd0d89ee49e24f96d2428a4081dba195df9fde28f3ac26724176d14a6",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/README.md"
+    },
+    {
+      "path": "bin/mtk_imei.php",
+      "bytes": 9373,
+      "sha256": "2149616db163552b0be51c865974280af08c441ea6a6c3b48b3f0d2416be7b7c",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/bin/mtk_imei.php"
+    },
+    {
+      "path": "data/alias.txt",
+      "bytes": 147,
+      "sha256": "ee00670b73f2966abb2527000ff91965fa7bfd6f3a18757a0bc2413ff147f840",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/alias.txt"
+    },
+    {
+      "path": "data/private_1024.pem",
+      "bytes": 887,
+      "sha256": "ab68fbbb2431cbd707054fe2e986f2ae9d3d7c66eb5707a0a6cdbcd7e1f6f958",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/private_1024.pem"
+    },
+    {
+      "path": "data/private_2048.pem",
+      "bytes": 1675,
+      "sha256": "8118a08e5f054bd71567983e8a0543df47eedb7272c8c120083a8cb42b035967",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/private_2048.pem"
+    },
+    {
+      "path": "data/begonia/nvram.bin",
+      "bytes": 67108864,
+      "sha256": "c44ec7b20543ed9adf54218c273f5e2cce688c9a1fb617366c159159f3334678",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/begonia/nvram.bin"
+    },
+    {
+      "path": "data/begonia/md_patcher-4.14.186.ko",
+      "bytes": 11328,
+      "sha256": "e18f3570cbf5c6cd23e4a27e46400abbd1b479f257f5db72e913bd5a0262f340",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/begonia/md_patcher-4.14.186.ko"
+    },
+    {
+      "path": "data/begonia/updater-script.txt",
+      "bytes": 903,
+      "sha256": "fa8e94a75989097767bd796e46ed9b5ccca7c212204696efbf2908c9385e2ca6",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/begonia/updater-script.txt"
+    },
+    {
+      "path": "data/patch.zip",
+      "bytes": 2425290,
+      "sha256": "1397d1e221a3dcabe68afd1af707974da965c2472ebfb61784951554c9edabc1",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/data/patch.zip"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+      "source": "https://raw.githubusercontent.com/timjosten/mtk_imei/100e67c2696f6247fef398cf5b46b9cb260e0f93/LICENSE"
+    }
+  ]
+}
